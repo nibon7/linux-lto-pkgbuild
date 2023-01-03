@@ -47,6 +47,10 @@ prepare() {
 
   echo "Setting config..."
   cp ../config .config
+  if [[ "x$NATIVE_INTEL" != "x" ]]; then
+      sed -i 's/^# CONFIG_MNATIVE_INTEL is not set/CONFIG_MNATIVE_INTEL=y/' .config
+      sed -i 's/^CONFIG_MNATIVE_AMD=y/# CONFIG_MNATIVE_AMD is not set/' .config
+  fi
   make olddefconfig
   diff -u ../config .config || :
 
