@@ -1,7 +1,7 @@
 # Maintainer: nibon7 <nibon7@163.com>
 
 pkgbase=linux-lto
-pkgver=6.1.1.lto1
+pkgver=6.1.2.lto1
 pkgrel=1
 pkgdesc='Linux'
 url="https://www.kernel.org"
@@ -9,16 +9,18 @@ arch=(x86_64)
 license=(GPL2)
 makedepends=(
   bc libelf pahole cpio perl tar xz clang llvm lld
-  xmlto python-sphinx python-sphinx_rtd_theme graphviz imagemagick texlive-latexextra
+  xmlto 'python-sphinx<6.0.0' python-sphinx_rtd_theme graphviz imagemagick texlive-latexextra
 )
 options=('!strip')
 _srcname=linux-6.1.1
 source=(
   "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.1.tar.xz"
+  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.1.1-2.xz"
   "https://raw.githubusercontent.com/graysky2/kernel_compiler_patch/master/more-uarches-for-kernel-5.17+.patch"
   config         # the main kernel config file
 )
 sha256sums=('a3e61377cf4435a9e2966b409a37a1056f6aaa59e561add9125a88e3c0971dfb'
+            '3c6f47a4620c692a2e533f8783a788438cc216ff5ae00a0c5fa0ef95d302984b'
             'ba133fdda4dcc62de10792ae1d8149ce4a18d13a6ad808926e8b2d94b72071c3'
             'fb95ad0c9c7dd2e71bb6193c5293162a35ccd13897488eb9f71767237c49baa1')
 
@@ -40,9 +42,15 @@ prepare() {
   for src in "${source[@]}"; do
     src="${src%%::*}"
     src="${src##*/}"
-    [[ $src = *.patch ]] || continue
-    echo "Applying patch $src..."
-    patch -Np1 < "../$src"
+    if [[ $src = *.patch ]]; then
+        echo "Applying patch $src..."
+        patch -Np1 < "../$src"
+    elif [[ $src = patch-*.xz ]]; then
+        echo "Applying patch $src..."
+        xzcat "../$src" | patch -Np1
+    else
+        continue
+    fi
   done
 
   echo "Setting config..."
