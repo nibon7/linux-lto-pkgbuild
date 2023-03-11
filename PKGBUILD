@@ -2,7 +2,7 @@
 
 pkgbase=linux-lto
 pkgver=6.2.3.lto1
-pkgrel=1
+pkgrel=2
 pkgdesc='Linux'
 url="https://www.kernel.org"
 arch=(x86_64)
@@ -24,7 +24,7 @@ sha256sums=('2fcc07e1c90ea4ce148f50f9beeb0dca0b6e4b379a768de8abc7a4a26f252534'
             'c2ae3a65db0937d661a9ef4e9ff6e86759a0813591aff2888c1af297b1ba2d0b'
             '348ea838d17fc47d1dbfcef462f869a4e5cba30cf167bdd65aac5b9630bce048'
             'ba133fdda4dcc62de10792ae1d8149ce4a18d13a6ad808926e8b2d94b72071c3'
-            '7d51941835d9e5b85c1b7194b9fb1facd0748c112dd7e1c60812f829c9817769')
+            '9036c4e92557f56084dbd3073b60d09527225a2d6131bde2444a51bb407feeaf')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
