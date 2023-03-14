@@ -2,13 +2,13 @@
 
 pkgbase=linux-lto
 pkgver=6.2.5.lto1
-pkgrel=1
+pkgrel=2
 pkgdesc='Linux'
 url="https://www.kernel.org"
 arch=(x86_64)
 license=(GPL2)
 makedepends=(
-  bc libelf pahole cpio perl tar xz clang llvm lld
+  bc libelf pahole cpio perl tar xz clang llvm lld rust-bindgen
   xmlto python-sphinx graphviz imagemagick texlive-latexextra
 )
 options=('!strip')
@@ -28,7 +28,7 @@ sha256sums=('2fcc07e1c90ea4ce148f50f9beeb0dca0b6e4b379a768de8abc7a4a26f252534'
             '5aaa58e180086e942790774e719f92de170dcbaccc0af3f6d870b2418ad65e4a'
             'baa2e56fb9dceb773d24bdd5952021325d30d9605593bb120cd838abfc3abbab'
             'ba133fdda4dcc62de10792ae1d8149ce4a18d13a6ad808926e8b2d94b72071c3'
-            '9036c4e92557f56084dbd3073b60d09527225a2d6131bde2444a51bb407feeaf')
+            '499b1e8729d4f650b9ae206031aa266349b2a58fd2c50dd43df7969200471b60')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
@@ -58,6 +58,18 @@ prepare() {
         continue
     fi
   done
+
+  echo "Setting rust toolchain..."
+  cat > rust-toolchain.toml << EOF
+[toolchain]
+channel = "1.63.0"
+components = [ "rust-src" ]
+EOF
+  rustc --version
+  sed -e 's/--blacklist-type/--blocklist-type/g' \
+    -e 's/--whitelist-var/--allowlist-var/g' \
+    -e 's/--whitelist-function/--allowlist-function/g' \
+    -i rust/Makefile
 
   echo "Setting config..."
   cp ../config .config
@@ -146,6 +158,14 @@ _package-headers() {
 
   echo "Installing KConfig files..."
   find . -name 'Kconfig*' -exec install -Dm644 {} "$builddir/{}" \;
+
+  echo "Installing Rust development files..."
+  cp -r -t "$builddir" rust
+
+  echo "Removing generated files for rust..."
+  find "$builddir/rust" -type f -name 'built-in.a' -printf 'Removing %P\n' -delete
+  find "$builddir/rust" -type f -name 'modules.order' -printf 'Removing %P\n' -delete
+  find "$builddir/rust" -type f -name '*.cmd' -printf 'Removing %P\n' -delete
 
   echo "Removing unneeded architectures..."
   local arch
