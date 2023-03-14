@@ -1,8 +1,8 @@
 # Maintainer: nibon7 <nibon7@163.com>
 
 pkgbase=linux-lto
-pkgver=6.2.5.lto1
-pkgrel=2
+pkgver=6.2.6.lto1
+pkgrel=1
 pkgdesc='Linux'
 url="https://www.kernel.org"
 arch=(x86_64)
@@ -19,6 +19,7 @@ source=(
   "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.2-3.xz"
   "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.3-4.xz"
   "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.4-5.xz"
+  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.5-6.xz"
   "https://raw.githubusercontent.com/graysky2/kernel_compiler_patch/master/more-uarches-for-kernel-5.17+.patch"
   config         # the main kernel config file
 )
@@ -27,6 +28,7 @@ sha256sums=('2fcc07e1c90ea4ce148f50f9beeb0dca0b6e4b379a768de8abc7a4a26f252534'
             '348ea838d17fc47d1dbfcef462f869a4e5cba30cf167bdd65aac5b9630bce048'
             '5aaa58e180086e942790774e719f92de170dcbaccc0af3f6d870b2418ad65e4a'
             'baa2e56fb9dceb773d24bdd5952021325d30d9605593bb120cd838abfc3abbab'
+            'e01f9e9698039f6e12dadb584b62f9c8f561a6ec8758b7e097a253364bbb7020'
             'ba133fdda4dcc62de10792ae1d8149ce4a18d13a6ad808926e8b2d94b72071c3'
             '499b1e8729d4f650b9ae206031aa266349b2a58fd2c50dd43df7969200471b60')
 
