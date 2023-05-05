@@ -1,44 +1,45 @@
 # Maintainer: nibon7 <nibon7@163.com>
 
 pkgbase=linux-lto
-pkgver=6.2.10.lto1
+pkgver=6.3.1.lto1
 pkgrel=1
 pkgdesc='Linux'
 url="https://www.kernel.org"
 arch=(x86_64)
 license=(GPL2)
 makedepends=(
-  bc libelf pahole cpio perl tar xz clang llvm lld rust-bindgen
-  xmlto python-sphinx graphviz imagemagick texlive-latexextra
+  bc
+  cpio
+  gettext
+  libelf
+  pahole
+  perl
+  tar
+  xz
+
+  # rust
+  # rust-bindgen
+  clang
+  lld
+  llvm
+
+  # htmldocs
+  graphviz
+  imagemagick
+  python-sphinx
+  texlive-latexextra
+  xmlto
 )
 options=('!strip')
-_srcname=linux-6.2.1
+_srcname=linux-6.3.1
 source=(
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.1.tar.xz"
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.1-2.xz"
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.2-3.xz"
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.3-4.xz"
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.4-5.xz"
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.5-6.xz"
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.6-7.xz"
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.7-8.xz"
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.8-9.xz"
-  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.2.9-10.xz"
+  "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.3.1.tar.xz"
   "https://raw.githubusercontent.com/graysky2/kernel_compiler_patch/master/more-uarches-for-kernel-5.17+.patch"
-  config         # the main kernel config file
+  config # the main kernel config file
 )
-sha256sums=('2fcc07e1c90ea4ce148f50f9beeb0dca0b6e4b379a768de8abc7a4a26f252534'
-            'c2ae3a65db0937d661a9ef4e9ff6e86759a0813591aff2888c1af297b1ba2d0b'
-            '348ea838d17fc47d1dbfcef462f869a4e5cba30cf167bdd65aac5b9630bce048'
-            '5aaa58e180086e942790774e719f92de170dcbaccc0af3f6d870b2418ad65e4a'
-            'baa2e56fb9dceb773d24bdd5952021325d30d9605593bb120cd838abfc3abbab'
-            'e01f9e9698039f6e12dadb584b62f9c8f561a6ec8758b7e097a253364bbb7020'
-            '34889b2031b9eb449d2aa6dce43cf3b724baff234207b76fc9e45a28d2244e08'
-            'b1007e3cda6eb9de564498fae9a184bfd891abaf7e0523ca0a02c61564f21349'
-            '7ba2c0128c959ae0506c90fe26af9e9bc53e1bbba1d4eae60ca6883345bad273'
-            'ddf407781cc445a206aacf9421ebc137982a7e6ec312ef9dcf120ed44f48d7b7'
+sha256sums=('78620fb4a7d5e0db1d4eb8d5b1c6e207ba5d19564efa63967a59b6daf89b3f2a'
             'ba133fdda4dcc62de10792ae1d8149ce4a18d13a6ad808926e8b2d94b72071c3'
-            'ff21411a4d505142231599d294f3da6caf2472498be4a8e701f8b125c97a16e4')
+            'd0f632409ba9557772f55b41d0debafc9f6ae46a7858af9b7c4c551e5406b03a')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
@@ -46,13 +47,20 @@ export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EP
 export CC=clang
 export LLVM=1
 
+_make() {
+  test -s version
+  make KERNELRELEASE="$(<version)" "$@"
+}
+
 prepare() {
   cd $_srcname
 
   echo "Setting version..."
-  scripts/setlocalversion --save-scmversion
   echo "-$pkgrel" > localversion.10-pkgrel
   echo "${pkgbase#linux}" > localversion.20-pkgname
+  make defconfig
+  make -s kernelrelease > version
+  make mrproper
 
   local src
   for src in "${source[@]}"; do
@@ -75,11 +83,6 @@ prepare() {
 channel = "1.63.0"
 components = [ "rust-src" ]
 EOF
-  rustc --version
-  sed -e 's/--blacklist-type/--blocklist-type/g' \
-    -e 's/--whitelist-var/--allowlist-var/g' \
-    -e 's/--whitelist-function/--allowlist-function/g' \
-    -i rust/Makefile
 
   echo "Setting config..."
   cp ../config .config
@@ -87,40 +90,50 @@ EOF
       sed -i 's/^# CONFIG_MNATIVE_INTEL is not set/CONFIG_MNATIVE_INTEL=y/' .config
       sed -i 's/^CONFIG_MNATIVE_AMD=y/# CONFIG_MNATIVE_AMD is not set/' .config
   fi
-  make olddefconfig
+  _make olddefconfig
   diff -u ../config .config || :
 
-  make -s kernelrelease > version
   echo "Prepared $pkgbase version $(<version)"
 }
 
 build() {
   cd $_srcname
-  make htmldocs all
+  _make htmldocs all
 }
 
 _package() {
   pkgdesc="The $pkgdesc kernel and modules"
-  depends=(coreutils kmod)
-  optdepends=('wireless-regdb: to set the correct wireless channels of your country'
-              'linux-firmware: firmware images needed for some devices')
-  provides=(VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE KSMBD-MODULE)
-  replaces=(virtualbox-guest-modules-arch wireguard-arch)
+  depends=(
+    coreutils
+    kmod
+  )
+  optdepends=(
+    'wireless-regdb: to set the correct wireless channels of your country'
+    'linux-firmware: firmware images needed for some devices'
+  )
+  provides=(
+    KSMBD-MODULE
+    VIRTUALBOX-GUEST-MODULES
+    WIREGUARD-MODULE
+  )
+  replaces=(
+    virtualbox-guest-modules-arch
+    wireguard-arch
+  )
 
   cd $_srcname
-  local kernver="$(<version)"
-  local modulesdir="$pkgdir/usr/lib/modules/$kernver"
+  local modulesdir="$pkgdir/usr/lib/modules/$(<version)"
 
   echo "Installing boot image..."
   # systemd expects to find the kernel here to allow hibernation
   # https://github.com/systemd/systemd/commit/edda44605f06a41fb86b7ab8128dcf99161d2344
-  install -Dm644 "$(make -s image_name)" "$pkgdir/boot/vmlinuz"
+  install -Dm644 "$(_make -s image_name)" "$pkgdir/boot/vmlinuz"
 
   # Used by mkinitcpio to name the kernel
   echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
 
   echo "Installing modules..."
-  make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
+  _make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
     DEPMOD=/doesnt/exist modules_install  # Suppress depmod
 
   # remove build and source links
@@ -236,7 +249,11 @@ _package-docs() {
   ln -sr "$builddir/Documentation" "$pkgdir/usr/share/doc/$pkgbase"
 }
 
-pkgname=("$pkgbase" "$pkgbase-headers" "$pkgbase-docs")
+pkgname=(
+  "$pkgbase"
+  "$pkgbase-headers"
+  "$pkgbase-docs"
+)
 for _p in "${pkgname[@]}"; do
   eval "package_$_p() {
     $(declare -f "_package${_p#$pkgbase}")
