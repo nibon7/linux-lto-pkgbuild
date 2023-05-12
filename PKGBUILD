@@ -57,13 +57,6 @@ _make() {
 prepare() {
   cd $_srcname
 
-  echo "Setting version..."
-  echo "-$pkgrel" > localversion.10-pkgrel
-  echo "${pkgbase#linux}" > localversion.20-pkgname
-  make defconfig
-  make -s kernelrelease > version
-  make mrproper
-
   local src
   for src in "${source[@]}"; do
     src="${src%%::*}"
@@ -85,6 +78,13 @@ prepare() {
 channel = "1.63.0"
 components = [ "rust-src" ]
 EOF
+
+  echo "Setting version..."
+  echo "-$pkgrel" > localversion.10-pkgrel
+  echo "${pkgbase#linux}" > localversion.20-pkgname
+  make defconfig
+  make -s kernelrelease > version
+  make mrproper
 
   echo "Setting config..."
   cp ../config .config
