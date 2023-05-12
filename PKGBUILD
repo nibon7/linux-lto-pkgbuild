@@ -1,7 +1,7 @@
 # Maintainer: nibon7 <nibon7@163.com>
 
 pkgbase=linux-lto
-pkgver=6.3.1.lto1
+pkgver=6.3.2.lto1
 pkgrel=1
 pkgdesc='Linux'
 url="https://www.kernel.org"
@@ -34,10 +34,12 @@ options=('!strip')
 _srcname=linux-6.3.1
 source=(
   "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.3.1.tar.xz"
+  "https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.3.1-2.xz"
   "https://raw.githubusercontent.com/graysky2/kernel_compiler_patch/master/more-uarches-for-kernel-5.17+.patch"
   config # the main kernel config file
 )
 sha256sums=('78620fb4a7d5e0db1d4eb8d5b1c6e207ba5d19564efa63967a59b6daf89b3f2a'
+            'a6cdb915b39452a69b2196ca731947b9ea26b837e51056164a62107584116d91'
             'ba133fdda4dcc62de10792ae1d8149ce4a18d13a6ad808926e8b2d94b72071c3'
             'd0f632409ba9557772f55b41d0debafc9f6ae46a7858af9b7c4c551e5406b03a')
 
